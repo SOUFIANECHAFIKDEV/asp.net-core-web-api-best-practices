@@ -1,14 +1,16 @@
 ﻿using Api.Domain;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Api.Servises
 {
     public interface IPostServeic
     {
-        public List<Post> GetAll();
-        public Post GetPostById(Guid postId);
-        public bool Update(Post postToUpdate);
-        public bool Delete(Guid postId);
+        public Task<List<Post>> GetAllAsync();
+        public Task<bool> Create(Post postToCreate);
+        public Task<Post> GetPostByIdAsync(Guid postId);
+        public Task<bool> UpdateAsync(Post postToUpdate);
+        public Task<bool> DeleteAsync(Guid postId);
     }
 }

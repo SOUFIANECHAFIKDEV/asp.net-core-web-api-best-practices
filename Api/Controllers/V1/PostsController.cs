@@ -5,6 +5,7 @@ using Api.Domain;
 using Api.Servises;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace Api.Controllers.V1
 {
@@ -18,13 +19,13 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Posts.GetAll)]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAllAsync()
         {
-            return Ok(_postServeic.GetAll());
+            return Ok(await _postServeic.GetAllAsync());
         }
 
         [HttpPut(ApiRoutes.Posts.Update)]
-        public IActionResult Update([FromRoute] Guid postId, [FromBody] UpdatePostRequest request)
+        public async Task<IActionResult> UpdateAsync([FromRoute] Guid postId, [FromBody] UpdatePostRequest request)
         {
             var post = new Post
             {
@@ -32,7 +33,7 @@ namespace Api.Controllers.V1
                 Name = request.Name
             };
 
-            var updated = _postServeic.Update(post);
+            var updated = await _postServeic.UpdateAsync(post);
 
             if (updated)
                 return Ok(post);
@@ -41,20 +42,20 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Posts.Get)]
-        public IActionResult Get([FromRoute] Guid postId)
+        public async Task<IActionResult> GetAsync([FromRoute] Guid postId)
         {
-            return Ok(_postServeic.GetPostById(postId));
+            return Ok(await _postServeic.GetPostByIdAsync(postId));
         }
 
         [HttpPost(ApiRoutes.Posts.Create)]
-        public IActionResult Create([FromBody] CreatePostRequest postRequest)
+        public async Task<IActionResult> CreateAsync([FromBody] CreatePostRequest postRequest)
         {
-            var post = new Post { Id = postRequest.Id, Name = postRequest.Name };
+            var post = new Post { Name = postRequest.Name };
 
             if (post.Id != Guid.Empty)
                 post.Id = Guid.NewGuid();
 
-            _postServeic.GetAll().Add(post);
+            await _postServeic.Create(post);
 
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
             var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
@@ -64,9 +65,9 @@ namespace Api.Controllers.V1
         }
 
         [HttpDelete(ApiRoutes.Posts.Delete)]
-        public IActionResult Delete([FromRoute] Guid postId)
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid postId)
         {
-            var deleted = _postServeic.Delete(postId);
+            var deleted = await _postServeic.DeleteAsync(postId);
 
             if (deleted)
                 return NoContent();
