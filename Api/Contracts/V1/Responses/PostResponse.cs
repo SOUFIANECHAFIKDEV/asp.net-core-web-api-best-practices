@@ -1,6 +1,6 @@
-﻿namespace Api.Domain
+﻿namespace Api.Contracts.V1.Responses
 {
-    public class Post
+    public class PostResponse
     {
         public System.Guid Id { get; set; }
         public string Name { get; set; }

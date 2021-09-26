@@ -1,4 +1,5 @@
 ﻿using Api.Data;
+using Api.Servises;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,10 @@ namespace Api.Installers
         public void InstallerServices(IServiceCollection services, IConfiguration Configuration)
         {
             services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<DataContext>();
+
+            services.AddSingleton<IPostServeic, PostServeic>();
         }
     }
 }
