@@ -3,12 +3,15 @@ using Api.Contracts.V1.Requests;
 using Api.Contracts.V1.Responses;
 using Api.Domain;
 using Api.Servises;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.V1
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PostsController : Controller
     {
         private readonly IPostServeic _postServeic;

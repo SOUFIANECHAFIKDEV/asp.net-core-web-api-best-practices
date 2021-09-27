@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
+using Api.Servises;
 
 namespace Api.Installers
 {
@@ -19,6 +20,7 @@ namespace Api.Installers
             /*
                 Setting up JWT support (Authentication)
             */
+            services.AddScoped<IIdentityService, IdentityService>();
 
             var jwtSettings = new JwtSettings();
             Configuration.Bind(key: nameof(jwtSettings), jwtSettings);
