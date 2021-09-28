@@ -37,5 +37,32 @@ namespace Api.Controllers.V1
                 Token = authResponse.Token
             });
         }
+
+        [HttpPost(ApiRoutes.Identity.Login)]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new AuthFaildResponse
+                {
+                    Errors = ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))
+                });
+            }
+
+            var authResponse = await _identityService.LoginAsync(request.Email, request.Password);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFaildResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok(new AuthSuccessResponse
+            {
+                Token = authResponse.Token
+            });
+        }
     }
 }
