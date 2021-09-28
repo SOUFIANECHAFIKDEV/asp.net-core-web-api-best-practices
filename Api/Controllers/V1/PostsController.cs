@@ -2,6 +2,7 @@
 using Api.Contracts.V1.Requests;
 using Api.Contracts.V1.Responses;
 using Api.Domain;
+using Api.Extensions;
 using Api.Servises;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -22,19 +23,23 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Posts.GetAll)]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAll()
         {
             return Ok(await _postServeic.GetAllAsync());
         }
 
         [HttpPut(ApiRoutes.Posts.Update)]
-        public async Task<IActionResult> UpdateAsync([FromRoute] Guid postId, [FromBody] UpdatePostRequest request)
+        public async Task<IActionResult> Update([FromRoute] Guid postId, [FromBody] UpdatePostRequest request)
         {
-            var post = new Post
+            var userOwnsPost = await _postServeic.UserOwnsPostAsync(postId, HttpContext.GetUserId());
+
+            if (!userOwnsPost)
             {
-                Id = postId,
-                Name = request.Name
-            };
+                return BadRequest(new { error = "you do not own this post" });
+            }
+
+            var post = await _postServeic.GetPostByIdAsync(postId);
+            post.Name = request.Name;
 
             var updated = await _postServeic.UpdateAsync(post);
 
@@ -45,15 +50,19 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Posts.Get)]
-        public async Task<IActionResult> GetAsync([FromRoute] Guid postId)
+        public async Task<IActionResult> Get([FromRoute] Guid postId)
         {
             return Ok(await _postServeic.GetPostByIdAsync(postId));
         }
 
         [HttpPost(ApiRoutes.Posts.Create)]
-        public async Task<IActionResult> CreateAsync([FromBody] CreatePostRequest postRequest)
+        public async Task<IActionResult> Create([FromBody] CreatePostRequest postRequest)
         {
-            var post = new Post { Name = postRequest.Name };
+            var post = new Post
+            {
+                Name = postRequest.Name,
+                UserId = HttpContext.GetUserId()
+            };
 
             if (post.Id != Guid.Empty)
                 post.Id = Guid.NewGuid();
@@ -68,7 +77,7 @@ namespace Api.Controllers.V1
         }
 
         [HttpDelete(ApiRoutes.Posts.Delete)]
-        public async Task<IActionResult> DeleteAsync([FromRoute] Guid postId)
+        public async Task<IActionResult> Delete([FromRoute] Guid postId)
         {
             var deleted = await _postServeic.DeleteAsync(postId);
 

@@ -12,5 +12,6 @@ namespace Api.Servises
         public Task<Post> GetPostByIdAsync(Guid postId);
         public Task<bool> UpdateAsync(Post postToUpdate);
         public Task<bool> DeleteAsync(Guid postId);
+        public Task<bool> UserOwnsPostAsync(Guid postId, string userId);
     }
 }
