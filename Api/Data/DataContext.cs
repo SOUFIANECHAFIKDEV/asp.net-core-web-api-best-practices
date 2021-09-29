@@ -1,9 +1,6 @@
 ﻿using Api.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Api.Data
 {
@@ -14,5 +11,7 @@ namespace Api.Data
         {
         }
         public DbSet<Post> Post { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        
     }
 }
