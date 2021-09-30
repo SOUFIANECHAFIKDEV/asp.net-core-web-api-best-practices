@@ -17,6 +17,10 @@ namespace Api.Installers
         {
             services.AddMvc(options => options.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
+
             /*
                 Setting up JWT support (Authentication)
             */
@@ -51,6 +55,11 @@ namespace Api.Installers
                  x.SaveToken = true;
                  x.TokenValidationParameters = tokenValidationParameters;
              });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("TagViewer", builder => builder.RequireClaim("tags.view", "true"));
+            });
 
             /*
                 [Swagger] Registration

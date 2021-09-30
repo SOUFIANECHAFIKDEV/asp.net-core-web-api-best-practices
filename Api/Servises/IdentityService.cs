@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -41,8 +42,10 @@ namespace Api.Servises
                 };
             }
 
+            var newUserId = Guid.NewGuid();
             var newUser = new IdentityUser
             {
+                Id = newUserId.ToString(),
                 Email = email,
                 UserName = email
             };
@@ -57,6 +60,8 @@ namespace Api.Servises
                     Errors = createdUser.Errors.Select(x => x.Description)
                 };
             }
+
+            await _userManager.AddClaimAsync(newUser, new Claim("tags.view", "true"));
 
             return await GenerateAuthenticationResultForUserAsync(newUser);
         }
@@ -88,7 +93,7 @@ namespace Api.Servises
             return await GenerateAuthenticationResultForUserAsync(user);
         }
 
-       
+
 
         public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
         {
@@ -143,22 +148,28 @@ namespace Api.Servises
             await _dataContext.SaveChangesAsync();
 
             var user = await _userManager.FindByIdAsync(validatedToken.Claims.Single(x => x.Type == "id").Value);
-            return await GenerateAuthenticationResultForUserAsync (user);
+            return await GenerateAuthenticationResultForUserAsync(user);
         }
 
         private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(IdentityUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);//Encoding.ASCII.GetBytes(_jwtSettings.Secret);
-            var tokenDescription = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims: new[]
+
+            var claims = new List<Claim>
                 {
                     new Claim(type: JwtRegisteredClaimNames.Sub, value: user.Email),
                     new Claim(type: JwtRegisteredClaimNames.Jti, value: Guid.NewGuid().ToString()),
                     new Claim(type: JwtRegisteredClaimNames.Email, value: user.Email),
                     new Claim(type: "id", value: user.Id),
-                }),
+                };
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            claims.AddRange(userClaims);
+
+            var tokenDescription = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.Add(_jwtSettings.TokenLifetime),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
