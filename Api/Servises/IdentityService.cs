@@ -167,7 +167,6 @@ namespace Api.Servises
 
             var refreshToken = new RefreshToken
             {
-                Token = tokenHandler.WriteToken(token),
                 JwtId = token.Id,
                 UserId = user.Id,
                 CreationDate = DateTime.UtcNow,

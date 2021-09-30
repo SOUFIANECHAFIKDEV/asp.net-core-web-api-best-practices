@@ -18,7 +18,7 @@ namespace Api.Servises
 
         public async Task<List<Post>> GetAllAsync()
         {
-            return await _dataContext.Post.ToListAsync();
+            return await _dataContext.Post.Include(x => x.Tags).ToListAsync();
         }
 
         public async Task<bool> Create(Post postToCreate)

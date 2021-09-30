@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,5 +16,6 @@ namespace Api.Domain
 
         [ForeignKey(nameof(UserId))]
         public IdentityUser User { get; set; }
+        public List<Tags> Tags { get; set; }
     }
 }

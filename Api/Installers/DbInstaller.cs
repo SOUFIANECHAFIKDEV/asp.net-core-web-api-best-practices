@@ -16,6 +16,7 @@ namespace Api.Installers
             services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<DataContext>();
 
             services.AddScoped<IPostServeic, PostServeic>();
+            services.AddScoped<ITagsService, TagsService>();
         }
     }
 }

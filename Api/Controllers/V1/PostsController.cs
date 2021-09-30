@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.V1
@@ -58,10 +60,19 @@ namespace Api.Controllers.V1
         [HttpPost(ApiRoutes.Posts.Create)]
         public async Task<IActionResult> Create([FromBody] CreatePostRequest postRequest)
         {
+            var tags = postRequest.Tags.Select(tag =>
+            {
+                return new Tags
+                {
+                    TagName = tag
+                };
+            }).ToList();
+
             var post = new Post
             {
                 Name = postRequest.Name,
-                UserId = HttpContext.GetUserId()
+                UserId = HttpContext.GetUserId(),
+                Tags = tags
             };
 
             if (post.Id != Guid.Empty)
@@ -72,7 +83,7 @@ namespace Api.Controllers.V1
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
             var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
 
-            var response = new PostResponse { Id = post.Id, Name = post.Name };
+            var response = new PostResponse { Id = post.Id, Name = post.Name, Tags = post.Tags.Select(tag => tag.TagName).ToList() };
             return Created(locationUrl, response);
         }
 

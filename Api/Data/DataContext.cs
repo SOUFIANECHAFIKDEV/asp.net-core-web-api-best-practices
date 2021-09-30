@@ -12,6 +12,7 @@ namespace Api.Data
         }
         public DbSet<Post> Post { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-        
+        public DbSet<Tags> Tags { get; set; }
+
     }
 }
