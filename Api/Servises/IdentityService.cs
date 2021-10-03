@@ -93,8 +93,6 @@ namespace Api.Servises
             return await GenerateAuthenticationResultForUserAsync(user);
         }
 
-
-
         public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
         {
             var validatedToken = GetPricipalFromToken(token);
@@ -151,12 +149,43 @@ namespace Api.Servises
             return await GenerateAuthenticationResultForUserAsync(user);
         }
 
+        public async Task<AddUserToRolesResult> AddUserToRolesAsync(string email, IEnumerable<string> roles)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                return new AddUserToRolesResult
+                {
+                    Success = false,
+                    Errors = new[] { "User does not exist" }
+                };
+            }
+
+            IdentityResult result = await _userManager.AddToRolesAsync(user, roles);
+
+            if (!result.Succeeded)
+            {
+                return new AddUserToRolesResult
+                {
+                    Success = false,
+                    Errors = result.Errors.Select(x => x.Description).ToArray<string>()
+                };
+            }
+
+
+            return new AddUserToRolesResult
+            {
+                Success = true
+            };
+        }
+
         private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(IdentityUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);//Encoding.ASCII.GetBytes(_jwtSettings.Secret);
 
-            var claims = new List<Claim>
+            /*var claims = new List<Claim>
                 {
                     new Claim(type: JwtRegisteredClaimNames.Sub, value: user.Email),
                     new Claim(type: JwtRegisteredClaimNames.Jti, value: Guid.NewGuid().ToString()),
@@ -166,6 +195,11 @@ namespace Api.Servises
 
             var userClaims = await _userManager.GetClaimsAsync(user);
             claims.AddRange(userClaims);
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            claims.Add(new Claim(type: "roles", value: userRoles.ToString()));*/
+
+            var claims = await GetValidClaims(user);
 
             var tokenDescription = new SecurityTokenDescriptor
             {
@@ -222,6 +256,37 @@ namespace Api.Servises
         {
             return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
                     jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private async Task<List<Claim>> GetValidClaims(IdentityUser user)
+        {
+            IdentityOptions _options = new IdentityOptions();
+            var claims = new List<Claim>
+                        {
+                            new Claim(type: JwtRegisteredClaimNames.Sub, value: user.Email),
+                            new Claim(type: JwtRegisteredClaimNames.Jti, value: Guid.NewGuid().ToString()),
+                            new Claim(type: JwtRegisteredClaimNames.Email, value: user.Email),
+                            new Claim(type: "id", value: user.Id),
+                        };
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            claims.AddRange(userClaims);
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            foreach (var userRole in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, userRole));
+                var role = await _userManager.FindByNameAsync(userRole);
+                if (role != null)
+                {
+                    var roleClaims = await _userManager.GetClaimsAsync(role);
+                    foreach (Claim roleClaim in roleClaims)
+                    {
+                        claims.Add(roleClaim);
+                    }
+                }
+            }
+            return claims;
         }
     }
 }

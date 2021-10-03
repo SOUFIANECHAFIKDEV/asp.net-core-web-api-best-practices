@@ -1,13 +1,8 @@
 ﻿using Api.Contracts.V1;
-using Api.Contracts.V1.Requests;
-using Api.Contracts.V1.Responses;
-using Api.Domain;
-using Api.Extensions;
 using Api.Servises;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.V1

@@ -3,8 +3,6 @@ using Api.Contracts.V1.Requests;
 using Api.Contracts.V1.Responses;
 using Api.Servises;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -66,7 +64,6 @@ namespace Api.Controllers.V1
                 RefreshToken = authResponse.RefreshToken
             });
         }
-
         
         [HttpPost(ApiRoutes.Identity.Refresh)]
         public async Task<IActionResult> Login([FromBody] RefreshTokenRequest request)
@@ -94,6 +91,30 @@ namespace Api.Controllers.V1
                 Token = authResponse.Token,
                 RefreshToken = authResponse.RefreshToken
             });
+        }
+
+        [HttpPost(ApiRoutes.Identity.AddUserToRoles)]
+        public async Task<IActionResult> AddUserToRolesAsync([FromBody] AddUserToRolesRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new AddUserToRolesFaildResponse
+                {
+                    Errors = ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))
+                });
+            }
+
+            var authResponse = await _identityService.AddUserToRolesAsync(request.Email, request.Roles);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AddUserToRolesFaildResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok();
         }
     }
 }

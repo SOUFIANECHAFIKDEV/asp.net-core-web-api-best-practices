@@ -8,13 +8,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.V1
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin,Poster")]
     public class PostsController : Controller
     {
         private readonly IPostServeic _postServeic;
@@ -88,6 +87,7 @@ namespace Api.Controllers.V1
         }
 
         [HttpDelete(ApiRoutes.Posts.Delete)]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete([FromRoute] Guid postId)
         {
             var deleted = await _postServeic.DeleteAsync(postId);

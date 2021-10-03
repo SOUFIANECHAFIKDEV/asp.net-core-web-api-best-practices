@@ -13,7 +13,7 @@ namespace Api.Installers
         {
             services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<DataContext>();
+            services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<DataContext>();
 
             services.AddScoped<IPostServeic, PostServeic>();
             services.AddScoped<ITagsService, TagsService>();
