@@ -8,6 +8,8 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
 using Api.Servises;
+using Api.Authenification;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Installers
 {
@@ -60,6 +62,17 @@ namespace Api.Installers
             {
                 options.AddPolicy("TagViewer", builder => builder.RequireClaim("tags.view", "true"));
             });
+
+            services.AddAuthorization(options =>
+              {
+                  options.AddPolicy("MustWorkForMicrosoft", policy =>
+                  {
+                      policy.AddRequirements(new WorkForCompanyRequirement("outlook.com"));
+                  });
+              }
+            );
+
+            services.AddSingleton<IAuthorizationHandler, WorkForCompanyHandler>();
 
             /*
                 [Swagger] Registration

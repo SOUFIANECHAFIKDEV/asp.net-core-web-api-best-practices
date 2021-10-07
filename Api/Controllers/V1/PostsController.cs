@@ -87,7 +87,7 @@ namespace Api.Controllers.V1
         }
 
         [HttpDelete(ApiRoutes.Posts.Delete)]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin", Policy = "MustWorkForMicrosoft")]
         public async Task<IActionResult> Delete([FromRoute] Guid postId)
         {
             var deleted = await _postServeic.DeleteAsync(postId);
