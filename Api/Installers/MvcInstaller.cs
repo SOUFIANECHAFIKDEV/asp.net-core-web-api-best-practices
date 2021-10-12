@@ -1,17 +1,15 @@
-﻿using Api.Options;
+﻿using Api.Authenification;
+using Api.Filters;
+using Api.Options;
+using Api.Servises;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Text;
-using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
-using Api.Servises;
-using Api.Authenification;
-using Microsoft.AspNetCore.Authorization;
-using FluentValidation.AspNetCore;
-using Api.Filters;
+using System.Text;
 
 namespace Api.Installers
 {
@@ -81,45 +79,6 @@ namespace Api.Installers
             );
 
             services.AddSingleton<IAuthorizationHandler, WorkForCompanyHandler>();
-
-            /*
-                [Swagger] Registration
-            */
-            services.AddSwaggerGen(x =>
-            {
-                x.SwaggerDoc("v1", new OpenApiInfo { Title = "Best Implementation API", Version = "v1" });
-
-                #region Setting up JWT support (Authentication)
-
-                x.AddSecurityDefinition(name: "Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme.",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-
-                x.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }/*,
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,*/
-                        },
-                        new List<string>()
-                    }
-                });
-
-                #endregion
-            });
         }
     }
 }
