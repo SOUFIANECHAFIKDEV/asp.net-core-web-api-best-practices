@@ -4,10 +4,12 @@ using Api.Contracts.V1.Responses;
 using Api.Domain;
 using Api.Extensions;
 using Api.Servises;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,16 +19,20 @@ namespace Api.Controllers.V1
     public class PostsController : Controller
     {
         private readonly IPostServeic _postServeic;
+        private readonly IMapper _mapper;
 
-        public PostsController(IPostServeic postServeic)
+        public PostsController(IPostServeic postServeic, IMapper mapper)
         {
             _postServeic = postServeic;
+            _mapper = mapper;
         }
 
         [HttpGet(ApiRoutes.Posts.GetAll)]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _postServeic.GetAllAsync());
+            var posts = await _postServeic.GetAllAsync();
+            var postsResponses = _mapper.Map<List<PostResponse>>(posts);
+            return Ok(postsResponses);
         }
 
         [HttpPut(ApiRoutes.Posts.Update)]
@@ -82,7 +88,7 @@ namespace Api.Controllers.V1
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
             var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
 
-            var response = new PostResponse { Id = post.Id, Name = post.Name, Tags = post.Tags.Select(tag => tag.TagName).ToList() };
+            var response = _mapper.Map<PostResponse>(post);
             return Created(locationUrl, response);
         }
 
