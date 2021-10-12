@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Api.Servises;
 using Api.Authenification;
 using Microsoft.AspNetCore.Authorization;
+using FluentValidation.AspNetCore;
+using Api.Filters;
 
 namespace Api.Installers
 {
@@ -17,7 +19,13 @@ namespace Api.Installers
     {
         public void InstallerServices(IServiceCollection services, IConfiguration Configuration)
         {
-            services.AddMvc(options => options.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+                options.Filters.Add<ValidationFilter>();
+            })
+            .AddFluentValidation(mvcConfiguration => mvcConfiguration.RegisterValidatorsFromAssemblyContaining<Startup>())
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddControllersWithViews().AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
