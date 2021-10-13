@@ -1,4 +1,5 @@
-﻿using Api.Contracts.V1;
+﻿using Api.Cache;
+using Api.Contracts.V1;
 using Api.Contracts.V1.Requests;
 using Api.Contracts.V1.Responses;
 using Api.Domain;
@@ -33,6 +34,7 @@ namespace Api.Controllers.V1
         /// </summary>
         /// <response code="200">Returns all the posts in the system</response>
         [HttpGet(ApiRoutes.Posts.GetAll)]
+        [Cached(600)]
         public async Task<IActionResult> GetAll()
         {
             var posts = await _postServeic.GetAllAsync();
@@ -62,6 +64,7 @@ namespace Api.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Posts.Get)]
+        [Cached(600)]
         public async Task<IActionResult> Get([FromRoute] Guid postId)
         {
             return Ok(await _postServeic.GetPostByIdAsync(postId));
