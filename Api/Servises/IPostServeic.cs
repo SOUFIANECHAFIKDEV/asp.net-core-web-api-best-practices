@@ -7,7 +7,7 @@ namespace Api.Servises
 {
     public interface IPostServeic
     {
-        public Task<List<Post>> GetAllAsync();
+        public Task<List<Post>> GetAllAsync(PaginationFilter paginationFilter = null);
         public Task<bool> Create(Post postToCreate);
         public Task<Post> GetPostByIdAsync(Guid postId);
         public Task<bool> UpdateAsync(Post postToUpdate);

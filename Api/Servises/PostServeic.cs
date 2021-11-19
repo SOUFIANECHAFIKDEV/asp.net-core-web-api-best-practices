@@ -3,6 +3,7 @@ using Api.Domain;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Api.Servises
@@ -16,9 +17,16 @@ namespace Api.Servises
             _dataContext = dataContext;
         }
 
-        public async Task<List<Post>> GetAllAsync()
+        public async Task<List<Post>> GetAllAsync(PaginationFilter paginationFilter = null)
         {
-            return await _dataContext.Post.Include(x => x.Tags).ToListAsync();
+            if (paginationFilter == null)
+            {
+                return await _dataContext.Post.Include(x => x.Tags).ToListAsync();
+            }
+
+            var skip = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
+            return await _dataContext.Post.Include(x => x.Tags)
+                .Skip(skip).Take(paginationFilter.PageSize).ToListAsync();
         }
 
         public async Task<bool> Create(Post postToCreate)

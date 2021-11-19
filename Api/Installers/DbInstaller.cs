@@ -11,7 +11,7 @@ namespace Api.Installers
     {
         public void InstallerServices(IServiceCollection services, IConfiguration Configuration)
         {
-            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("MassarDefaultConnection")));
 
             services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<DataContext>();
 

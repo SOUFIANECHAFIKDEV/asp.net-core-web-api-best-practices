@@ -1,9 +1,11 @@
 ﻿using Api.Cache;
 using Api.Contracts.V1;
 using Api.Contracts.V1.Requests;
+using Api.Contracts.V1.Requests.Queries;
 using Api.Contracts.V1.Responses;
 using Api.Domain;
 using Api.Extensions;
+using Api.Helpers;
 using Api.Servises;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,11 +24,13 @@ namespace Api.Controllers.V1
     {
         private readonly IPostServeic _postServeic;
         private readonly IMapper _mapper;
+        private readonly IUriService _uriService;
 
-        public PostsController(IPostServeic postServeic, IMapper mapper)
+        public PostsController(IPostServeic postServeic, IMapper mapper, IUriService uriService)
         {
             _postServeic = postServeic;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
         /// <summary>
@@ -35,11 +39,20 @@ namespace Api.Controllers.V1
         /// <response code="200">Returns all the posts in the system</response>
         [HttpGet(ApiRoutes.Posts.GetAll)]
         [Cached(600)]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationQuery paginationQuery)
         {
-            var posts = await _postServeic.GetAllAsync();
-            var postsResponses = _mapper.Map<List<PostResponse>>(posts);
-            return Ok(postsResponses);
+            var pagination = _mapper.Map<PaginationFilter>(paginationQuery);
+            var posts = await _postServeic.GetAllAsync(pagination);
+            var postsResponse = _mapper.Map<List<PostResponse>>(posts);
+
+            if (pagination == null || pagination.PageNumber < 1 || pagination.PageSize < 1)
+            {
+                return Ok(new PageResponse<PostResponse>(postsResponse));
+            }
+
+            var paginationResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, postsResponse);
+
+            return Ok(paginationResponse);
         }
 
         [HttpPut(ApiRoutes.Posts.Update)]
@@ -58,7 +71,8 @@ namespace Api.Controllers.V1
             var updated = await _postServeic.UpdateAsync(post);
 
             if (updated)
-                return Ok(post);
+                return Ok(new Response<PostResponse>(_mapper.Map<PostResponse>(post)));
+
 
             return NotFound();
         }
@@ -67,7 +81,12 @@ namespace Api.Controllers.V1
         [Cached(600)]
         public async Task<IActionResult> Get([FromRoute] Guid postId)
         {
-            return Ok(await _postServeic.GetPostByIdAsync(postId));
+            var post = await _postServeic.GetPostByIdAsync(postId);
+
+            if (post == null)
+                return NotFound();
+
+            return Ok(new Response<PostResponse>(_mapper.Map<PostResponse>(post)));
         }
 
         /// <summary>
@@ -113,11 +132,11 @@ namespace Api.Controllers.V1
                 return BadRequest(new ErrorResponse { Errors = new List<ErrorModel> { new ErrorModel { Message = "Unable to create tag" } } });
             }
 
-            var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
-            var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
+            //var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
+            //var locationUrl = baseUrl + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
 
-            var response = _mapper.Map<PostResponse>(post);
-            return Created(locationUrl, response);
+            var postLocation = _uriService.GetPostUri(post.Id.ToString());
+            return Created(postLocation, new Response<PostResponse>(_mapper.Map<PostResponse>(post)));
         }
 
         [HttpDelete(ApiRoutes.Posts.Delete)]
